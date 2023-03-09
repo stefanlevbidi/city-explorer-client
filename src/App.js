@@ -7,6 +7,7 @@ function App() {
   const [location, setLocation] = useState({});
   const [mapUrl, setMapUrl] = useState("");
   const [showError, setShowError] = useState(false);
+  const [weather, setWeather] = useState([]);
 
   // change the value of searchQuery whenever I type in the input
   function handleChange(event) {
@@ -18,7 +19,7 @@ function App() {
       // get the location data
       const API = `https://eu1.locationiq.com/v1/search.php?key=${process.env.REACT_APP_CITY_KEY}&q=${searchQuery}&format=json`;
       const res = await axios.get(API);
-
+      console.log(res);
       setLocation(res.data[0]);
 
       // change the url for the map image
@@ -27,6 +28,8 @@ function App() {
       setMapUrl(
         `https://maps.locationiq.com/v3/staticmap?key=${process.env.REACT_APP_CITY_KEY}&center=${lat},${lon}&zoom=18`
       );
+      getWeather();
+      setShowError(false);
     } catch (error) {
       console.log(error);
       setLocation({});
@@ -35,6 +38,17 @@ function App() {
     }
   }
 
+  async function getWeather() {
+    try {
+      const API = `http://localhost:8080/weather?searchQuery=${searchQuery}`;
+      const res = await axios.get(API);
+      console.log(res);
+      setWeather(res.data);
+    } catch (error) {
+      console.log(error);
+      setWeather([]);
+    }
+  }
   return (
     <div className="App">
       <input onChange={handleChange} />
@@ -45,6 +59,13 @@ function App() {
         {location.lat} {location.lon}
       </p>
       <img src={mapUrl} alt="map" />
+      {weather.map((day, index) => {
+        return (
+          <p key={index}>
+            {day.date}: {day.description}
+          </p>
+        );
+      })}
     </div>
   );
 }
